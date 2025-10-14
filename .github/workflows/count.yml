@@ -1,0 +1,15 @@
+name: Contar arquivos HTML
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  count-html:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Contar arquivos .html
+        run: |
+          count=$(find . -type f -iname '*.html' | wc -l | tr -d ' ')
+          echo "Arquivos .html encontrados: $count"
+          echo "html_count=$count" >> $GITHUB_OUTPUT
