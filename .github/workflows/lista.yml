@@ -1,0 +1,20 @@
+name: Listar arquivos do repositório
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Listar arquivos (recursivo)
+        run: |
+          echo "=== ls -la ==="
+          ls -la
+          echo "=== tree (limit 3) ==="
+          if command -v tree > /dev/null; then
+            tree -L 3
+          else
+            find . -maxdepth 3 -printf '%P\n' | sed '/^$/d' | head -n 200
+          fi
