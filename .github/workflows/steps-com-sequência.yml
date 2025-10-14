@@ -13,7 +13,7 @@ jobs:
           echo "Pusher: $GITHUB_ACTOR"
           echo "Ref: $GITHUB_REF"
 
-      - name: Contar arquivos HTML/CSS/JS por commit
+      - name: Contar arquivos HTML/CSS/JS por commit (robusto)
         run: |
           TOTAL_HTML=0
           TOTAL_CSS=0
@@ -21,12 +21,15 @@ jobs:
           NUM_COMMITS=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
 
           for i in $(seq 0 $((NUM_COMMITS-1))); do
-            # Pega os arquivos adicionados/modificados do commit atual, sem quebrar se não existir
-            FILES=$(jq -r ".commits[$i].added? // [] | .[] , .commits[$i].modified? // [] | .[]" "$GITHUB_EVENT_PATH")
+            # Garantir que o array exista
+            FILES=$(jq -r "
+              (.commits[$i].added // []) + (.commits[$i].modified // []) | .[]
+            " "$GITHUB_EVENT_PATH") || FILES=""
 
-            HTML=$(echo "$FILES" | grep -i '\.html$' | wc -l | tr -d ' ')
-            CSS=$(echo "$FILES" | grep -i '\.css$' | wc -l | tr -d ' ')
-            JS=$(echo "$FILES" | grep -i '\.js$' | wc -l | tr -d ' ')
+            # Contagem segura mesmo que FILES esteja vazio
+            HTML=$(echo "$FILES" | grep -i '\.html$' || true | wc -l | tr -d ' ')
+            CSS=$(echo "$FILES" | grep -i '\.css$' || true | wc -l | tr -d ' ')
+            JS=$(echo "$FILES" | grep -i '\.js$' || true | wc -l | tr -d ' ')
 
             TOTAL_HTML=$((TOTAL_HTML + HTML))
             TOTAL_CSS=$((TOTAL_CSS + CSS))
