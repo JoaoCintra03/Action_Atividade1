@@ -13,22 +13,22 @@ jobs:
           echo "Pusher: $GITHUB_ACTOR"
           echo "Ref: $GITHUB_REF"
 
-      - name: Contar arquivos HTML/CSS/JS por commit
+      - name: Contar arquivos HTML/CSS/JS por commit (simplificado)
         run: |
-          echo "Iterando pelos commits do push..."
-          FILES_JSON=$(cat "$GITHUB_EVENT_PATH" | jq -c '.commits[] | {added: .added, modified: .modified}')
+          COMMITS_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
           TOTAL_HTML=0
           TOTAL_CSS=0
           TOTAL_JS=0
-          i=0
-          echo "$FILES_JSON" | while read commit; do
-            i=$((i+1))
-            HTML=$(echo "$commit" | jq '[.added[], .modified[]] | map(select(test("\\.html$"; "i"))) | length')
-            CSS=$(echo "$commit" | jq '[.added[], .modified[]] | map(select(test("\\.css$"; "i"))) | length')
-            JS=$(echo "$commit" | jq '[.added[], .modified[]] | map(select(test("\\.js$"; "i"))) | length')
+
+          for i in $(seq 0 $((COMMITS_COUNT-1))); do
+            ADDED_MODIFIED=$(jq -r ".commits[$i].added[], .commits[$i].modified[]" "$GITHUB_EVENT_PATH" 2>/dev/null || echo "")
+            HTML=$(echo "$ADDED_MODIFIED" | grep -i '\.html$' | wc -l | tr -d ' ')
+            CSS=$(echo "$ADDED_MODIFIED" | grep -i '\.css$' | wc -l | tr -d ' ')
+            JS=$(echo "$ADDED_MODIFIED" | grep -i '\.js$' | wc -l | tr -d ' ')
             TOTAL_HTML=$((TOTAL_HTML + HTML))
             TOTAL_CSS=$((TOTAL_CSS + CSS))
             TOTAL_JS=$((TOTAL_JS + JS))
-            echo "Commit $i -> html:$HTML css:$CSS js:$JS"
+            echo "Commit $((i+1)) -> html:$HTML css:$CSS js:$JS"
           done
+
           echo "Totais sequenciais: html=$TOTAL_HTML css=$TOTAL_CSS js=$TOTAL_JS"
