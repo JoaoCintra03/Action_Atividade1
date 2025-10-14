@@ -13,21 +13,25 @@ jobs:
           echo "Pusher: $GITHUB_ACTOR"
           echo "Ref: $GITHUB_REF"
 
-      - name: Contar arquivos HTML/CSS/JS por commit (simplificado)
+      - name: Contar arquivos HTML/CSS/JS por commit
         run: |
-          COMMITS_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
           TOTAL_HTML=0
           TOTAL_CSS=0
           TOTAL_JS=0
+          NUM_COMMITS=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
 
-          for i in $(seq 0 $((COMMITS_COUNT-1))); do
-            ADDED_MODIFIED=$(jq -r ".commits[$i].added[], .commits[$i].modified[]" "$GITHUB_EVENT_PATH" 2>/dev/null || echo "")
-            HTML=$(echo "$ADDED_MODIFIED" | grep -i '\.html$' | wc -l | tr -d ' ')
-            CSS=$(echo "$ADDED_MODIFIED" | grep -i '\.css$' | wc -l | tr -d ' ')
-            JS=$(echo "$ADDED_MODIFIED" | grep -i '\.js$' | wc -l | tr -d ' ')
+          for i in $(seq 0 $((NUM_COMMITS-1))); do
+            # Pega os arquivos adicionados/modificados do commit atual, sem quebrar se não existir
+            FILES=$(jq -r ".commits[$i].added? // [] | .[] , .commits[$i].modified? // [] | .[]" "$GITHUB_EVENT_PATH")
+
+            HTML=$(echo "$FILES" | grep -i '\.html$' | wc -l | tr -d ' ')
+            CSS=$(echo "$FILES" | grep -i '\.css$' | wc -l | tr -d ' ')
+            JS=$(echo "$FILES" | grep -i '\.js$' | wc -l | tr -d ' ')
+
             TOTAL_HTML=$((TOTAL_HTML + HTML))
             TOTAL_CSS=$((TOTAL_CSS + CSS))
             TOTAL_JS=$((TOTAL_JS + JS))
+
             echo "Commit $((i+1)) -> html:$HTML css:$CSS js:$JS"
           done
 
