@@ -1,7 +1,8 @@
 name: Agendamento — rodar apenas à noite
 on:
   schedule:
-    - cron: '0 * * * *'   # rodando a cada hora; job checa se está no horário noturno
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   night-only:
