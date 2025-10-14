@@ -1,0 +1,36 @@
+name: Contagem diária à meia-noite
+on:
+  schedule:
+    # 00:00 São Paulo = 03:00 UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:   # permite rodar manualmente
+
+permissions:
+  contents: write
+
+jobs:
+  daily-count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Contar arquivos e registrar
+        run: |
+          # Contagem total de arquivos
+          TOTAL=$(find . -type f ! -path "./.git/*" | wc -l | tr -d ' ')
+          HTML=$(find . -type f -iname '*.html' | wc -l | tr -d ' ')
+          CSS=$(find . -type f -iname '*.css' | wc -l | tr -d ' ')
+          JS=$(find . -type f -iname '*.js' | wc -l | tr -d ' ')
+
+          # Data e hora São Paulo
+          NOW=$(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M:%S')
+
+          # Registrar em counts.txt
+          echo "$NOW TOTAL:$TOTAL HTML:$HTML CSS:$CSS JS:$JS" >> counts.txt
+
+          # Commit automático
+          git add counts.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: atualização counts ($NOW)" || echo "Nada para commitar"
+          git push || echo "Push falhou (talvez nada mudou)"
