@@ -1,0 +1,15 @@
+name: Calcular 2+2
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  calc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calcular 2+2
+        run: |
+          result=$((2+2))
+          echo "RESULTADO=$result"
+          echo "Resultado (em uma variável de output): $result"
