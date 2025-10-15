@@ -1,4 +1,4 @@
-name: Contar arquivos HTML
+name: Contar quantos arquivos HTML
 on:
   push:
     branches: [ main ]
