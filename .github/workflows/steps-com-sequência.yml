@@ -15,9 +15,9 @@ jobs:
 
       - name: Contar arquivos HTML/CSS/JS por commit (robusto)
         run: |
-          TOTAL_HTML=1
-          TOTAL_CSS=1
-          TOTAL_JS=1
+          TOTAL_HTML=0
+          TOTAL_CSS=0
+          TOTAL_JS=0
           NUM_COMMITS=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
 
           for i in $(seq 0 $((NUM_COMMITS-1))); do
